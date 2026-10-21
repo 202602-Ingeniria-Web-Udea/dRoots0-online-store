@@ -1,12 +1,12 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { prisma } from '@/lib/prisma';
 import { TableActions } from '@/components/users/table';
 import { DialogDemo } from '@/components/users/dialog';
 
 type users = {
   id: string;
   name: string;
-  lastName: string;
+  lastName: string | null;
   email: string;
   enabled: boolean;
   deleted: boolean;
@@ -15,9 +15,18 @@ type users = {
 };
 
 async function getUsers(): Promise<users[]> {
-  const response = await fetch('http://localhost:3000/api/users');
-  const data = await response.json();
-  return data.users;
+  return prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      lastName: true,
+      email: true,
+      enabled: true,
+      deleted: true,
+      role: true,
+      createdAt: true,
+    },
+  });
 }
 
 export default async function Users() {

@@ -20,7 +20,7 @@ import {
 type users = {
   id: string;
   name: string;
-  lastName: string;
+  lastName: string | null;
   email: string;
   enabled: boolean;
   deleted: boolean;
@@ -29,7 +29,7 @@ type users = {
 };
 import Link from 'next/link';
 
-export function TableActions({ users }: { users: any }) {
+export function TableActions({ users }: { users: users[] }) {
   console.log('users :>> ', users);
   return (
     <Table>
@@ -46,7 +46,7 @@ export function TableActions({ users }: { users: any }) {
       <TableBody>
         {users.length ? (
           users.map((user: users) => (
-            <TableRow id={user.id}>
+            <TableRow key={user.id} id={user.id}>
               <TableCell className='font-medium'>{user.name}</TableCell>
               <TableCell>{user.lastName}</TableCell>
               <TableCell>{user.email}</TableCell>
