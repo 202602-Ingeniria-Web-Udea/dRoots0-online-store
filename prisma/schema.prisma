@@ -40,18 +40,53 @@ enum Enum_PaymentStatus {
   REFUNDED
 }
 
+enum Enum_MovementType {
+  INCOMING
+  OUTGOING
+}
+
 model User {
-  id        String    @id @default(cuid())
+  id        String              @id @default(cuid())
   name      String
-  email     String    @unique
+  email     String              @unique
   lastName  String?
   password  String
-  deleted   Boolean   @default(false)
-  enabled   Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  role      Enum_Role @default(USER)
+  deleted   Boolean             @default(false)
+  enabled   Boolean             @default(true)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  role      Enum_Role           @default(USER)
   profile   Profile?
+  masters   InventoryMaster[]   @relation("MasterCreator")
+  movements InventoryMovement[] @relation("MovementResponsible")
+}
+
+model InventoryMaster {
+  id             String              @id @default(cuid())
+  name           String              @unique
+  initialBalance Decimal             @db.Decimal(14, 3)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  createdById    String
+  createdBy      User                @relation("MasterCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  movements      InventoryMovement[]
+
+  @@index([createdById])
+}
+
+model InventoryMovement {
+  id            String            @id @default(cuid())
+  type          Enum_MovementType
+  quantity      Decimal           @db.Decimal(14, 3)
+  occurredAt    DateTime          @default(now())
+  createdAt     DateTime          @default(now())
+  masterId      String
+  master        InventoryMaster   @relation(fields: [masterId], references: [id], onDelete: Restrict)
+  responsibleId String
+  responsible   User              @relation("MovementResponsible", fields: [responsibleId], references: [id], onDelete: Restrict)
+
+  @@index([masterId, occurredAt])
+  @@index([responsibleId])
 }
 
 model Customer {
