@@ -1,5 +1,5 @@
-import React from 'react';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth/session';
 import { TableActions } from '@/components/users/table';
 import { DialogDemo } from '@/components/users/dialog';
 
@@ -30,13 +30,15 @@ async function getUsers(): Promise<users[]> {
 }
 
 export default async function Users() {
+  await requireAdmin();
+
   const Data = await getUsers();
 
   return (
     <div>
       <div className='flex flex-row justify-around items-center'>
         <div>
-          <h1 className='text-5xl font-bold'>MAESTRO DE USUARIOS</h1>
+          <h1 className='text-5xl font-bold'>Users</h1>
         </div>
         <div>
           <DialogDemo />
