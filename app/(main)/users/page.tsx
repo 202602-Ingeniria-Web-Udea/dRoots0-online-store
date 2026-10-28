@@ -1,52 +1,33 @@
-import { prisma } from '@/lib/prisma';
-import { requireAdmin } from '@/lib/auth/session';
-import { TableActions } from '@/components/users/table';
-import { DialogDemo } from '@/components/users/dialog';
+import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth/session";
+import { UsersTable, type UserRow } from "@/components/users/table";
 
-type users = {
-  id: string;
-  name: string;
-  lastName: string | null;
-  email: string;
-  enabled: boolean;
-  deleted: boolean;
-  role: 'ADMIN' | 'USER';
-  createdAt: Date;
-};
-
-async function getUsers(): Promise<users[]> {
+async function getUsers(): Promise<UserRow[]> {
   return prisma.user.findMany({
     select: {
       id: true,
-      name: true,
-      lastName: true,
       email: true,
-      enabled: true,
-      deleted: true,
       role: true,
       createdAt: true,
     },
+    orderBy: { createdAt: "desc" },
   });
 }
 
 export default async function Users() {
   await requireAdmin();
 
-  const Data = await getUsers();
+  const users = await getUsers();
 
   return (
-    <div>
-      <div className='flex flex-row justify-around items-center'>
-        <div>
-          <h1 className='text-5xl font-bold'>Users</h1>
-        </div>
-        <div>
-          <DialogDemo />
-        </div>
+    <div className='flex flex-col gap-6'>
+      <div className='flex flex-col gap-1'>
+        <h1 className='text-2xl font-semibold tracking-tight'>Users</h1>
+        <p className='text-sm text-muted-foreground'>
+          Manage the roles of the people who can access the dashboard.
+        </p>
       </div>
-      <div>
-        <TableActions users={Data} />
-      </div>
+      <UsersTable users={users} />
     </div>
   );
 }
