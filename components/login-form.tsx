@@ -5,22 +5,23 @@ import Link from "next/link";
 
 import { authenticate } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [state, formAction, pending] = useActionState(authenticate, undefined);
+  const errorId = "login-error";
 
   return (
     <div className={className} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Sign in</CardTitle>
+          <h1 className="font-heading text-2xl leading-normal font-medium">Sign in</h1>
           <CardDescription>Access the inventory management workspace.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={formAction} noValidate>
+          <form action={formAction} aria-busy={pending}>
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -32,6 +33,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   placeholder="you@example.com"
                   required
                   aria-invalid={Boolean(state?.error)}
+                  aria-describedby={state?.error ? errorId : undefined}
                 />
               </Field>
               <Field>
@@ -43,10 +45,11 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   autoComplete="current-password"
                   required
                   aria-invalid={Boolean(state?.error)}
+                  aria-describedby={state?.error ? errorId : undefined}
                 />
               </Field>
               {state?.error ? (
-                <p role="alert" className="text-sm text-destructive">
+                <p id={errorId} role="alert" className="text-sm text-destructive">
                   {state.error}
                 </p>
               ) : null}

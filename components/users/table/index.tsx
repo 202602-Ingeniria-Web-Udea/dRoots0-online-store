@@ -27,7 +27,7 @@ function RoleBadge({ role }: { role: UserRole }) {
   const className =
     role === "ADMIN"
       ? "bg-primary/10 text-primary"
-      : "bg-muted text-muted-foreground";
+      : "bg-secondary text-secondary-foreground";
 
   return (
     <span
