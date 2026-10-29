@@ -12,7 +12,10 @@ const SKELETON_ROWS = 6;
 
 export default function UsersLoading() {
   return (
-    <div className='flex flex-col gap-6'>
+    <div className='flex flex-col gap-6' aria-busy='true'>
+      <span role='status' className='sr-only'>
+        Loading users
+      </span>
       <div className='flex flex-col gap-2'>
         <Skeleton className='h-8 w-24' />
         <Skeleton className='h-4 w-72' />
