@@ -15,7 +15,7 @@ async function getUsers(): Promise<UserRow[]> {
 }
 
 export default async function Users() {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const users = await getUsers();
 
@@ -27,7 +27,7 @@ export default async function Users() {
           Manage the roles of the people who can access the dashboard.
         </p>
       </div>
-      <UsersTable users={users} />
+      <UsersTable users={users} currentUserId={actor.id} />
     </div>
   );
 }
