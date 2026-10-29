@@ -18,13 +18,14 @@ export default function UsersLoading() {
         <Skeleton className='h-4 w-72' />
       </div>
       <div className='overflow-x-auto rounded-lg border'>
-        <Table className='min-w-[640px]'>
+        <Table className='min-w-[720px]'>
           <TableHeader>
             <TableRow>
               <TableHead>User ID</TableHead>
               <TableHead>Created</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead className='text-right'>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -41,6 +42,9 @@ export default function UsersLoading() {
                 </TableCell>
                 <TableCell>
                   <Skeleton className='h-5 w-16 rounded-full' />
+                </TableCell>
+                <TableCell className='text-right'>
+                  <Skeleton className='ml-auto h-8 w-14' />
                 </TableCell>
               </TableRow>
             ))}

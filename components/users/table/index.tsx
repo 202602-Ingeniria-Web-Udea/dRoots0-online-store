@@ -1,3 +1,4 @@
+import { EditUserDialog } from "@/components/users/edit-dialog";
 import {
   Table,
   TableBody,
@@ -37,10 +38,16 @@ function RoleBadge({ role }: { role: UserRole }) {
   );
 }
 
-export function UsersTable({ users }: { users: UserRow[] }) {
+export function UsersTable({
+  users,
+  currentUserId,
+}: {
+  users: UserRow[];
+  currentUserId: string;
+}) {
   return (
     <div className='overflow-x-auto rounded-lg border'>
-      <Table className='min-w-[640px]'>
+      <Table className='min-w-[720px]'>
         <TableCaption className='sr-only'>List of application users</TableCaption>
         <TableHeader>
           <TableRow>
@@ -48,12 +55,13 @@ export function UsersTable({ users }: { users: UserRow[] }) {
             <TableHead>Created</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Role</TableHead>
+            <TableHead className='text-right'>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {users.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className='h-24 text-center text-muted-foreground'>
+              <TableCell colSpan={5} className='h-24 text-center text-muted-foreground'>
                 No users found.
               </TableCell>
             </TableRow>
@@ -65,6 +73,15 @@ export function UsersTable({ users }: { users: UserRow[] }) {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
                   <RoleBadge role={user.role} />
+                </TableCell>
+                <TableCell className='text-right'>
+                  {user.id === currentUserId ? (
+                    <span className='text-xs text-muted-foreground'>Current account</span>
+                  ) : (
+                    <EditUserDialog
+                      user={{ id: user.id, email: user.email, role: user.role }}
+                    />
+                  )}
                 </TableCell>
               </TableRow>
             ))
