@@ -10,7 +10,16 @@ const credentialsSchema = z.object({
   password: z.string().min(1).max(200),
 });
 
+const authSecret = process.env.AUTH_SECRET;
+
+if (!authSecret) {
+  throw new Error(
+    "AUTH_SECRET is not configured. Add it to .env (generate one with: openssl rand -base64 32)."
+  );
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: authSecret,
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   trustHost: true,

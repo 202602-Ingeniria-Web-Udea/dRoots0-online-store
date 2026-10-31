@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth/session";
+import type { ActionResult } from "@/lib/types/action";
 import { validateRoleChange } from "@/lib/users/role-policy";
 
 const updateUserRoleSchema = z.object({
@@ -12,13 +13,7 @@ const updateUserRoleSchema = z.object({
   role: z.enum(["ADMIN", "USER"]),
 });
 
-export type UpdateUserRoleResult =
-  | { ok: true }
-  | { ok: false; error: string };
-
-export async function updateUserRole(
-  input: unknown
-): Promise<UpdateUserRoleResult> {
+export async function updateUserRole(input: unknown): Promise<ActionResult> {
   const actor = await requireAdmin();
 
   const parsed = updateUserRoleSchema.safeParse(input);
