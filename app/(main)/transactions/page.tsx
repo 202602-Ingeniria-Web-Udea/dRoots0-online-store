@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AddMovementDialog } from "@/components/transactions/add-movement-dialog";
 import { MasterSelect } from "@/components/transactions/master-select";
 import { MovementsTable } from "@/components/transactions/movements-table";
 import { requireUser } from "@/lib/auth/session";
@@ -46,7 +47,7 @@ export default async function TransactionsPage({
                 </span>
               </p>
             </div>
-            {/* The "Add Movement" button is added in task 4.2. */}
+            <AddMovementDialog masterId={detail.id} masterName={detail.name} />
           </div>
           <MovementsTable movements={detail.movements} />
         </section>
