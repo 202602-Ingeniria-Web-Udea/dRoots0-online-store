@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
-import { computeCurrentBalance } from "./balance";
+import {
+  buildDailyBalances,
+  computeCurrentBalance,
+  type DailyBalance,
+} from "./balance";
 import { formatPersonName } from "./format";
 
 export interface MovementRow {
@@ -16,6 +20,7 @@ export interface MasterDetail {
   name: string;
   currentBalance: string;
   movements: MovementRow[];
+  daily: DailyBalance[];
 }
 
 /** Returns null when the master does not exist. */
@@ -58,5 +63,8 @@ export async function getMasterDetail(
       master.movements,
     ).toFixed(),
     movements,
+    daily: buildDailyBalances(master.initialBalance, master.movements, {
+      until: new Date(),
+    }),
   };
 }
