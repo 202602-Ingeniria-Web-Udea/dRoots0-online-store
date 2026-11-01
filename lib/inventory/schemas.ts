@@ -16,3 +16,20 @@ export const createMasterSchema = z.object({
 });
 
 export type CreateMasterInput = z.infer<typeof createMasterSchema>;
+
+
+// ---- movements ----
+
+const ZERO = /^0+(\.0+)?$/;
+
+export const createMovementSchema = z.object({
+  masterId: z.string().trim().min(1, "Select an inventory master").max(64),
+  type: z.enum(["INCOMING", "OUTGOING"], { error: "Select a movement type" }),
+  quantity: z
+    .string()
+    .trim()
+    .regex(DECIMAL, "Enter a valid positive number (up to 3 decimals)")
+    .refine((value) => !ZERO.test(value), "Quantity must be greater than zero"),
+});
+
+export type CreateMovementInput = z.infer<typeof createMovementSchema>;
