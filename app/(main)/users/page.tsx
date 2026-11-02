@@ -14,7 +14,7 @@ async function getUsers(): Promise<UserRow[]> {
   });
 }
 
-export default async function Users() {
+export default async function UsersPage() {
   const actor = await requireAdmin();
 
   const users = await getUsers();

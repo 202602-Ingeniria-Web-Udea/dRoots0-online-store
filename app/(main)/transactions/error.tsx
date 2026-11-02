@@ -1,20 +1,31 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
-export default function TransactionsError({ reset }: { error: Error; reset: () => void }) {
+import { Button, buttonVariants } from "@/components/ui/button";
+
+export default function TransactionsError({
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
-    <div
-      role="alert"
-      className="rounded-xl border border-destructive/40 p-8 text-center"
-    >
-      <h2 className="font-medium">Could not load the transactions</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Something went wrong. Please try again.
-      </p>
-      <Button type="button" variant="outline" className="mt-4" onClick={reset}>
-        Try again
-      </Button>
+    <div className='flex max-w-xl flex-col gap-4 rounded-lg border border-destructive/30 bg-destructive/5 p-6'>
+      <div role='alert' className='space-y-2'>
+        <h1 className='text-lg font-semibold'>Unable to load transactions</h1>
+        <p className='text-sm text-muted-foreground'>
+          Something went wrong while loading the transactions. Please try again.
+        </p>
+      </div>
+      <div className='flex flex-wrap items-center gap-3'>
+        <Button type='button' className='w-fit' onClick={() => reset()}>
+          Try again
+        </Button>
+        <Link href='/home' className={buttonVariants({ variant: "outline" })}>
+          Back to dashboard
+        </Link>
+      </div>
     </div>
   );
 }
