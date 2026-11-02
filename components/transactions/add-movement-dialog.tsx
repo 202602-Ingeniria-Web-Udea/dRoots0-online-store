@@ -70,7 +70,11 @@ export function AddMovementDialog({
     toast.success("Movement registered");
     form.reset(defaults);
     setOpen(false);
-    router.refresh(); // refreshes the table and the chart
+    // Force a fresh server render so the balance, table, and chart update.
+    router.replace(
+      `/transactions?master=${encodeURIComponent(masterId)}&_r=${encodeURIComponent(result.data?.id ?? "refresh")}`,
+      { scroll: false }
+    );
   }
 
   return (
