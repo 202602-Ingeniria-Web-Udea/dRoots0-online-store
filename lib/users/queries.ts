@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { buildPagination, type Paginated } from "@/lib/pagination";
+import { sortDirection, type SortOrder } from "@/lib/sorting";
 
 export type UserRole = "ADMIN" | "USER";
 export type UserView = "active" | "deleted";
@@ -25,12 +26,15 @@ export async function getUsers({
   search,
   page = 1,
   view = "active",
+  order = "newest",
 }: {
   search?: string;
   page?: number;
   view?: UserView;
+  order?: SortOrder;
 } = {}): Promise<Paginated<UserRow>> {
   const term = search?.trim();
+  const direction = sortDirection(order);
   const where = {
     deleted: view === "deleted",
     ...(term
@@ -56,7 +60,7 @@ export async function getUsers({
       deleted: true,
       createdAt: true,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: direction }, { id: direction }],
     skip: (pagination.page - 1) * pagination.pageSize,
     take: pagination.pageSize,
   });

@@ -13,15 +13,18 @@ import {
 } from "@/components/ui/select";
 import type { MovementType } from "@/lib/inventory/movement-queries";
 import type { MasterOption } from "@/lib/inventory/queries";
+import type { SortOrder } from "@/lib/sorting";
 
 export function MasterSelect({
   masters,
   selectedId,
   selectedType,
+  selectedOrder,
 }: {
   masters: MasterOption[];
   selectedId?: string;
   selectedType?: MovementType;
+  selectedOrder?: SortOrder;
 }) {
   const router = useRouter();
   const items = masters.map((master) => ({ label: master.name, value: master.id }));
@@ -40,6 +43,7 @@ export function MasterSelect({
 
           const params = new URLSearchParams({ master: value });
           if (selectedType) params.set("type", selectedType);
+          if (selectedOrder === "oldest") params.set("order", "oldest");
           router.push(`/transactions?${params.toString()}`);
         }}
       >

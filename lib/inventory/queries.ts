@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { buildPagination, type Paginated } from "@/lib/pagination";
+import { sortDirection, type SortOrder } from "@/lib/sorting";
 
 import { computeCurrentBalance } from "./balance";
 import { formatPersonName } from "./format";
@@ -21,21 +22,24 @@ export interface MasterOption {
 export async function getMastersWithBalances({
   search,
   page = 1,
+  order = "newest",
 }: {
   search?: string;
   page?: number;
+  order?: SortOrder;
 } = {}): Promise<Paginated<MasterRow>> {
   const term = search?.trim();
   const where = term
     ? { name: { contains: term, mode: "insensitive" as const } }
     : undefined;
+  const direction = sortDirection(order);
 
   const total = await prisma.inventoryMaster.count({ where });
   const pagination = buildPagination(total, page);
 
   const masters = await prisma.inventoryMaster.findMany({
     where,
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: direction }, { id: direction }],
     skip: (pagination.page - 1) * pagination.pageSize,
     take: pagination.pageSize,
     select: {

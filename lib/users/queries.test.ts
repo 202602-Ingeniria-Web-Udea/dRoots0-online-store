@@ -122,6 +122,32 @@ describe("getUsers", () => {
       totalPages: 2,
     });
   });
+
+  it("orders users newest first by default", async () => {
+    mocks.count.mockResolvedValue(0);
+    mocks.findMany.mockResolvedValue([]);
+
+    await getUsers();
+
+    expect(mocks.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      }),
+    );
+  });
+
+  it("orders users oldest first when requested", async () => {
+    mocks.count.mockResolvedValue(0);
+    mocks.findMany.mockResolvedValue([]);
+
+    await getUsers({ order: "oldest" });
+
+    expect(mocks.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      }),
+    );
+  });
 });
 
 describe("parseUserView", () => {

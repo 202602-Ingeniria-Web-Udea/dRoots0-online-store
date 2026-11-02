@@ -115,6 +115,32 @@ describe("getMastersWithBalances", () => {
       totalPages: 2,
     });
   });
+
+  it("orders masters newest first by default", async () => {
+    mocks.count.mockResolvedValue(0);
+    mocks.findMany.mockResolvedValue([]);
+
+    await getMastersWithBalances();
+
+    expect(mocks.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      }),
+    );
+  });
+
+  it("orders masters oldest first when requested", async () => {
+    mocks.count.mockResolvedValue(0);
+    mocks.findMany.mockResolvedValue([]);
+
+    await getMastersWithBalances({ order: "oldest" });
+
+    expect(mocks.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      }),
+    );
+  });
 });
 
 describe("getMasterOptions", () => {

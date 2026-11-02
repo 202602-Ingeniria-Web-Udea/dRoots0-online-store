@@ -9,16 +9,27 @@ import { requireAdmin } from "@/lib/auth/session";
 import { readPage } from "@/lib/pagination";
 import { readSearchTerm } from "@/lib/search-params";
 import {
+  readSortOrder,
+  toggleSortOrder,
+  type SortOrder,
+} from "@/lib/sorting";
+import {
   getUsers,
   parseUserView,
   type UserView,
 } from "@/lib/users/queries";
 
-function usersHref(search: string, page: number, view: UserView) {
+function usersHref(
+  search: string,
+  page: number,
+  view: UserView,
+  order: SortOrder,
+) {
   const params = new URLSearchParams();
   if (search) params.set("q", search);
   if (page > 1) params.set("page", String(page));
   if (view === "deleted") params.set("view", "deleted");
+  if (order === "oldest") params.set("order", "oldest");
 
   const query = params.toString();
   return query ? `/users?${query}` : "/users";
@@ -31,6 +42,7 @@ export default async function UsersPage({
     q?: string | string[];
     page?: string | string[];
     view?: string | string[];
+    order?: string | string[];
   }>;
 }) {
   const actor = await requireAdmin();
@@ -38,7 +50,13 @@ export default async function UsersPage({
   const search = readSearchTerm(params.q);
   const page = readPage(params.page);
   const view = parseUserView(params.view);
-  const { items: users, pagination } = await getUsers({ search, page, view });
+  const order = readSortOrder(params.order);
+  const { items: users, pagination } = await getUsers({
+    search,
+    page,
+    view,
+    order,
+  });
 
   const emptyMessage =
     view === "deleted"
@@ -48,6 +66,11 @@ export default async function UsersPage({
       : search
         ? `No users match “${search}”.`
         : undefined;
+
+  const hiddenParams = {
+    ...(view === "deleted" ? { view: "deleted" } : {}),
+    ...(order === "oldest" ? { order: "oldest" } : {}),
+  };
 
   return (
     <div className='flex flex-col gap-6'>
@@ -67,7 +90,9 @@ export default async function UsersPage({
           label='Search users'
           placeholder='Search by name or email…'
           defaultValue={search}
-          hiddenParams={view === "deleted" ? { view: "deleted" } : undefined}
+          hiddenParams={
+            Object.keys(hiddenParams).length > 0 ? hiddenParams : undefined
+          }
         />
         <div
           className='flex flex-wrap items-center gap-1'
@@ -75,7 +100,7 @@ export default async function UsersPage({
           aria-label='User account status'
         >
           <Link
-            href={usersHref("", 1, "active")}
+            href={usersHref("", 1, "active", order)}
             aria-current={view === "active" ? "page" : undefined}
             className={buttonVariants({
               variant: view === "active" ? "default" : "outline",
@@ -85,7 +110,7 @@ export default async function UsersPage({
             Active users
           </Link>
           <Link
-            href={usersHref("", 1, "deleted")}
+            href={usersHref("", 1, "deleted", order)}
             aria-current={view === "deleted" ? "page" : undefined}
             className={buttonVariants({
               variant: view === "deleted" ? "default" : "outline",
@@ -101,11 +126,13 @@ export default async function UsersPage({
         users={users}
         currentUserId={actor.id}
         emptyMessage={emptyMessage}
+        order={order}
+        dateSortHref={usersHref(search, 1, view, toggleSortOrder(order))}
       />
       <PaginationControls
         pagination={pagination}
         itemLabel='users'
-        hrefForPage={(target) => usersHref(search, target, view)}
+        hrefForPage={(target) => usersHref(search, target, view, order)}
       />
     </div>
   );
