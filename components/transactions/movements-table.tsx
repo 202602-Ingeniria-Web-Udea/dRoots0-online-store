@@ -1,6 +1,7 @@
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -14,22 +15,25 @@ const BADGE_BASE = "inline-flex rounded-full px-2 py-0.5 text-xs font-medium";
 export function MovementsTable({ movements }: { movements: MovementRow[] }) {
   if (movements.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+      <div className='rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground'>
         This master has no movements yet.
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl ring-1 ring-foreground/10">
-      <Table>
+    <div className='overflow-x-auto rounded-xl ring-1 ring-foreground/10'>
+      <Table className='min-w-[720px]'>
+        <TableCaption className='sr-only'>
+          Movement history for the selected master
+        </TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead className="pl-4">ID</TableHead>
+            <TableHead className='pl-4'>ID</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Type</TableHead>
-            <TableHead className="text-right">Quantity</TableHead>
-            <TableHead className="pr-4">Responsible</TableHead>
+            <TableHead className='text-right'>Quantity</TableHead>
+            <TableHead className='pr-4'>Responsible</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -37,7 +41,7 @@ export function MovementsTable({ movements }: { movements: MovementRow[] }) {
             const incoming = movement.type === "INCOMING";
             return (
               <TableRow key={movement.id}>
-                <TableCell className="pl-4 font-mono text-xs text-muted-foreground">
+                <TableCell className='pl-4 font-mono text-xs text-muted-foreground'>
                   {movement.id}
                 </TableCell>
                 <TableCell>{formatDateTime(movement.occurredAt)}</TableCell>
@@ -52,11 +56,11 @@ export function MovementsTable({ movements }: { movements: MovementRow[] }) {
                     {incoming ? "Incoming" : "Outgoing"}
                   </span>
                 </TableCell>
-                <TableCell className="text-right tabular-nums">
+                <TableCell className='text-right tabular-nums'>
                   {incoming ? "+" : "−"}
                   {formatQuantity(movement.quantity)}
                 </TableCell>
-                <TableCell className="pr-4">{movement.responsible}</TableCell>
+                <TableCell className='pr-4'>{movement.responsible}</TableCell>
               </TableRow>
             );
           })}
