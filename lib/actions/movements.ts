@@ -31,7 +31,11 @@ async function runSerializable<T>(
 ): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     try {
-      return await prisma.$transaction(work, { isolationLevel: "Serializable" });
+      return await prisma.$transaction(work, {
+        isolationLevel: "Serializable",
+        maxWait: 10_000,
+        timeout: 15_000,
+      });
     } catch (error) {
       if (isSerializationFailure(error) && attempt < MAX_RETRIES) continue;
       throw error;

@@ -55,7 +55,11 @@ export function CreateMasterDialog() {
     toast.success("Inventory master created");
     form.reset(DEFAULT_VALUES);
     setOpen(false);
-    router.refresh();
+    // Force a fresh server render so the new master appears in the table.
+    router.replace(
+      `/masters?_r=${encodeURIComponent(result.data?.id ?? "refresh")}`,
+      { scroll: false }
+    );
   }
 
   return (
