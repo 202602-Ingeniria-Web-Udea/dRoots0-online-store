@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AddMovementDialog } from "@/components/transactions/add-movement-dialog";
+import { BalanceChart } from "@/components/transactions/balance-chart";
 import { MasterSelect } from "@/components/transactions/master-select";
 import { MovementsTable } from "@/components/transactions/movements-table";
 import { requireUser } from "@/lib/auth/session";
@@ -49,6 +50,7 @@ export default async function TransactionsPage({
             </div>
             <AddMovementDialog masterId={detail.id} masterName={detail.name} />
           </div>
+          <BalanceChart masterName={detail.name} data={detail.daily} />
           <MovementsTable movements={detail.movements} />
         </section>
       )}
