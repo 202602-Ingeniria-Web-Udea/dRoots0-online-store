@@ -8,15 +8,28 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDateTime, formatQuantity } from "@/lib/inventory/format";
-import type { MovementRow } from "@/lib/inventory/movement-queries";
+import type {
+  MovementRow,
+  MovementType,
+} from "@/lib/inventory/movement-queries";
 
 const BADGE_BASE = "inline-flex rounded-full px-2 py-0.5 text-xs font-medium";
 
-export function MovementsTable({ movements }: { movements: MovementRow[] }) {
+export function MovementsTable({
+  movements,
+  filterType,
+}: {
+  movements: MovementRow[];
+  filterType?: MovementType;
+}) {
   if (movements.length === 0) {
+    const message = filterType
+      ? `No ${filterType === "INCOMING" ? "incoming" : "outgoing"} movements for this master.`
+      : "This master has no movements yet.";
+
     return (
       <div className='rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground'>
-        This master has no movements yet.
+        {message}
       </div>
     );
   }

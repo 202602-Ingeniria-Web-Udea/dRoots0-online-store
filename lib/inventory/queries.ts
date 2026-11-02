@@ -17,8 +17,15 @@ export interface MasterOption {
 }
 
 /** Only non-sensitive user fields (name, lastName) are ever selected. */
-export async function getMastersWithBalances(): Promise<MasterRow[]> {
+export async function getMastersWithBalances(
+  search?: string,
+): Promise<MasterRow[]> {
+  const term = search?.trim();
+
   const masters = await prisma.inventoryMaster.findMany({
+    where: term
+      ? { name: { contains: term, mode: "insensitive" } }
+      : undefined,
     orderBy: { createdAt: "desc" },
     select: {
       id: true,

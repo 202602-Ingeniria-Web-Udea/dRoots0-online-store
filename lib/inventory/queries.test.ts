@@ -47,6 +47,28 @@ describe("getMastersWithBalances", () => {
       },
     ]);
   });
+
+  it("filters masters by a case-insensitive name search", async () => {
+    mocks.findMany.mockResolvedValue([]);
+
+    await getMastersWithBalances("coffee");
+
+    expect(mocks.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { name: { contains: "coffee", mode: "insensitive" } },
+      }),
+    );
+  });
+
+  it("does not filter when the search is blank", async () => {
+    mocks.findMany.mockResolvedValue([]);
+
+    await getMastersWithBalances("   ");
+
+    expect(mocks.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: undefined }),
+    );
+  });
 });
 
 describe("getMasterOptions", () => {

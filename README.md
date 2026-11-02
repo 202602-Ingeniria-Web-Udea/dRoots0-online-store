@@ -31,6 +31,7 @@ The dashboard tracks each inventory master from its initial balance through an a
 - Daily balance chart for the selected master.
 - ADMIN-only master creation, user creation, and role management.
 - Dashboard summary cards with recent activity.
+- Search for masters and users, and filter movements by type.
 - Profile image with initials fallback.
 - Server-side validation and authorization.
 - Responsive dashboard shell with loading, empty, error, and success states.

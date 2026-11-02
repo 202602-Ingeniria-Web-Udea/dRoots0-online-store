@@ -7,12 +7,22 @@ import {
 } from "./balance";
 import { formatPersonName } from "./format";
 
+export type MovementType = "INCOMING" | "OUTGOING";
+
 export interface MovementRow {
   id: string;
   occurredAt: Date;
-  type: "INCOMING" | "OUTGOING";
+  type: MovementType;
   quantity: string;
   responsible: string;
+}
+
+/** Reads a movement-type filter from a query parameter. */
+export function parseMovementType(
+  value: string | string[] | undefined,
+): MovementType | undefined {
+  if (value === "INCOMING" || value === "OUTGOING") return value;
+  return undefined;
 }
 
 export interface MasterDetail {
@@ -23,9 +33,14 @@ export interface MasterDetail {
   daily: DailyBalance[];
 }
 
-/** Returns null when the master does not exist. */
+/**
+ * Returns null when the master does not exist. The optional movement type only
+ * filters the displayed rows; balances and the daily series always use the
+ * complete movement history.
+ */
 export async function getMasterDetail(
   masterId: string,
+  movementType?: MovementType,
 ): Promise<MasterDetail | null> {
   const master = await prisma.inventoryMaster.findUnique({
     where: { id: masterId },
@@ -47,13 +62,15 @@ export async function getMasterDetail(
   });
   if (!master) return null;
 
-  const movements: MovementRow[] = master.movements.map((movement) => ({
-    id: movement.id,
-    occurredAt: movement.occurredAt,
-    type: movement.type,
-    quantity: movement.quantity.toString(),
-    responsible: formatPersonName(movement.responsible),
-  }));
+  const movements: MovementRow[] = master.movements
+    .filter((movement) => !movementType || movement.type === movementType)
+    .map((movement) => ({
+      id: movement.id,
+      occurredAt: movement.occurredAt,
+      type: movement.type,
+      quantity: movement.quantity.toString(),
+      responsible: formatPersonName(movement.responsible),
+    }));
 
   return {
     id: master.id,

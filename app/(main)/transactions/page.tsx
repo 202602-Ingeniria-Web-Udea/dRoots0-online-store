@@ -1,34 +1,62 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { AddMovementDialog } from "@/components/transactions/add-movement-dialog";
 import { BalanceChart } from "@/components/transactions/balance-chart";
 import { MasterSelect } from "@/components/transactions/master-select";
 import { MovementsTable } from "@/components/transactions/movements-table";
+import { buttonVariants } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth/session";
 import { formatQuantity } from "@/lib/inventory/format";
-import { getMasterDetail } from "@/lib/inventory/movement-queries";
+import type { MovementType } from "@/lib/inventory/movement-queries";
+import {
+  getMasterDetail,
+  parseMovementType,
+} from "@/lib/inventory/movement-queries";
 import { getMasterOptions } from "@/lib/inventory/queries";
 
 export const metadata: Metadata = { title: "Transactions" };
 
+const FILTERS: { label: string; value?: MovementType }[] = [
+  { label: "All", value: undefined },
+  { label: "Incoming", value: "INCOMING" },
+  { label: "Outgoing", value: "OUTGOING" },
+];
+
+function filterHref(masterId: string, type?: MovementType) {
+  const params = new URLSearchParams({ master: masterId });
+  if (type) params.set("type", type);
+  return `/transactions?${params.toString()}`;
+}
+
 export default async function TransactionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ master?: string | string[] }>;
+  searchParams: Promise<{
+    master?: string | string[];
+    type?: string | string[];
+  }>;
 }) {
   await requireUser();
 
   const params = await searchParams;
   const requestedId = typeof params.master === "string" ? params.master : undefined;
+  const requestedType = parseMovementType(params.type);
 
   const masters = await getMasterOptions();
-  const detail = requestedId ? await getMasterDetail(requestedId) : null;
+  const detail = requestedId
+    ? await getMasterDetail(requestedId, requestedType)
+    : null;
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold tracking-tight">Transactions</h1>
 
-      <MasterSelect masters={masters} selectedId={detail?.id} />
+      <MasterSelect
+        masters={masters}
+        selectedId={detail?.id}
+        selectedType={requestedType}
+      />
 
       {!detail ? (
         <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
@@ -48,10 +76,43 @@ export default async function TransactionsPage({
                 </span>
               </p>
             </div>
-            <AddMovementDialog masterId={detail.id} masterName={detail.name} />
+            <AddMovementDialog
+              masterId={detail.id}
+              masterName={detail.name}
+              movementType={requestedType}
+            />
           </div>
           <BalanceChart masterName={detail.name} data={detail.daily} />
-          <MovementsTable movements={detail.movements} />
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-sm font-medium">Movements</h3>
+            <div
+              className="flex flex-wrap items-center gap-1"
+              role="group"
+              aria-label="Filter movements by type"
+            >
+              {FILTERS.map((filter) => {
+                const active = filter.value === requestedType;
+
+                return (
+                  <Link
+                    key={filter.label}
+                    href={filterHref(detail.id, filter.value)}
+                    aria-current={active ? "true" : undefined}
+                    className={buttonVariants({
+                      variant: active ? "default" : "outline",
+                      size: "sm",
+                    })}
+                  >
+                    {filter.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+          <MovementsTable
+            movements={detail.movements}
+            filterType={requestedType}
+          />
         </section>
       )}
     </div>
