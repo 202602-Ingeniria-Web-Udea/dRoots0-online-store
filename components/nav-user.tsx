@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+
+import { initialsFor } from "@/lib/profile/initials";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -17,18 +20,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOut } from "next-auth/react";
-import { IconLogout, IconSelector } from "@tabler/icons-react";
-
-function initialsFor(name: string, email: string) {
-  const fromName = name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-
-  return fromName || email.charAt(0).toUpperCase() || "U";
-}
+import { IconLogout, IconSelector, IconUser } from "@tabler/icons-react";
 
 export function NavUser({
   user,
@@ -80,6 +72,10 @@ export function NavUser({
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
+            <DropdownMenuItem render={<Link href='/profile' />}>
+              <IconUser />
+              Profile
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 void signOut({ callbackUrl: "/login" });

@@ -42,10 +42,24 @@ async function upsertAccount(account: SeedAccount) {
     deleted: false,
   };
 
-  await prisma.user.upsert({
+  const user = await prisma.user.upsert({
     where: { email: account.email },
     update: data,
     create: { email: account.email, ...data },
+  });
+
+  const image =
+    account.role === "ADMIN" ? "/avatars/admin.svg" : "/avatars/user.svg";
+
+  await prisma.profile.upsert({
+    where: { userId: user.id },
+    update: { image },
+    create: {
+      userId: user.id,
+      image,
+      address: "",
+      phone: "",
+    },
   });
 }
 
