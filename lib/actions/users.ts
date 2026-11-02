@@ -14,8 +14,11 @@ import type { ActionResult } from "@/lib/types/action";
 import { createUserSchema } from "@/lib/users/schema";
 import { validateRoleChange } from "@/lib/users/role-policy";
 
-const updateUserRoleSchema = z.object({
+const userIdSchema = z.object({
   userId: z.string().trim().min(1).max(64),
+});
+
+const updateUserRoleSchema = userIdSchema.extend({
   role: z.enum(["ADMIN", "USER"]),
 });
 
@@ -71,6 +74,68 @@ export async function createUser(
     return {
       ok: false,
       error: "Could not create the user. Please try again.",
+    };
+  }
+}
+
+export async function deleteUser(input: unknown): Promise<ActionResult> {
+  const actor = await requireAdmin();
+
+  const parsed = userIdSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Invalid user deletion request." };
+  }
+
+  if (parsed.data.userId === actor.id) {
+    return { ok: false, error: "You cannot delete your own account." };
+  }
+
+  try {
+    const result = await prisma.user.updateMany({
+      where: { id: parsed.data.userId, deleted: false },
+      data: { deleted: true, enabled: false },
+    });
+
+    if (result.count === 0) {
+      return { ok: false, error: "User not found." };
+    }
+
+    revalidatePath("/users");
+    return { ok: true };
+  } catch (error) {
+    console.error("deleteUser failed", error);
+    return {
+      ok: false,
+      error: "Could not delete the user. Please try again.",
+    };
+  }
+}
+
+export async function restoreUser(input: unknown): Promise<ActionResult> {
+  await requireAdmin();
+
+  const parsed = userIdSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Invalid user restore request." };
+  }
+
+  try {
+    const result = await prisma.user.updateMany({
+      where: { id: parsed.data.userId, deleted: true },
+      data: { deleted: false, enabled: true },
+    });
+
+    if (result.count === 0) {
+      return { ok: false, error: "Deleted user not found." };
+    }
+
+    revalidatePath("/users");
+    return { ok: true };
+  } catch (error) {
+    console.error("restoreUser failed", error);
+    return {
+      ok: false,
+      error: "Could not restore the user. Please try again.",
     };
   }
 }

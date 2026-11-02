@@ -12,11 +12,13 @@ export function SearchForm({
   label,
   placeholder,
   defaultValue = "",
+  hiddenParams,
 }: {
   action: string;
   label: string;
   placeholder: string;
   defaultValue?: string;
+  hiddenParams?: Record<string, string>;
 }) {
   return (
     <form
@@ -33,6 +35,11 @@ export function SearchForm({
         aria-label={label}
         className='sm:max-w-xs'
       />
+      {hiddenParams
+        ? Object.entries(hiddenParams).map(([name, value]) => (
+            <input key={name} type='hidden' name={name} value={value} />
+          ))
+        : null}
       <button type='submit' className={buttonVariants({ variant: "outline" })}>
         Search
       </button>

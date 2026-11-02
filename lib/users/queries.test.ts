@@ -14,20 +14,21 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { getUsers } from "./queries";
+import { getUsers, parseUserView } from "./queries";
 
 describe("getUsers", () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
 
-  it("searches by name or email when a term is provided", async () => {
+  it("searches active users by name or email when a term is provided", async () => {
     mocks.count.mockResolvedValue(0);
     mocks.findMany.mockResolvedValue([]);
 
     await getUsers({ search: "ada" });
 
     const expectedWhere = {
+      deleted: false,
       OR: [
         { name: { contains: "ada", mode: "insensitive" } },
         { email: { contains: "ada", mode: "insensitive" } },
@@ -43,16 +44,49 @@ describe("getUsers", () => {
     );
   });
 
-  it("lists every user when the search is blank", async () => {
+  it("lists active users when the search is blank", async () => {
     mocks.count.mockResolvedValue(0);
     mocks.findMany.mockResolvedValue([]);
 
     await getUsers({ search: "   " });
 
-    expect(mocks.count).toHaveBeenCalledWith({ where: undefined });
+    expect(mocks.count).toHaveBeenCalledWith({
+      where: { deleted: false },
+    });
     expect(mocks.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: undefined }),
+      expect.objectContaining({ where: { deleted: false } }),
     );
+  });
+
+  it("lists only deleted users in the deleted view", async () => {
+    mocks.count.mockResolvedValue(0);
+    mocks.findMany.mockResolvedValue([]);
+
+    await getUsers({ view: "deleted" });
+
+    expect(mocks.count).toHaveBeenCalledWith({
+      where: { deleted: true },
+    });
+    expect(mocks.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { deleted: true } }),
+    );
+  });
+
+  it("combines the deleted view with search", async () => {
+    mocks.count.mockResolvedValue(0);
+    mocks.findMany.mockResolvedValue([]);
+
+    await getUsers({ search: "ada", view: "deleted" });
+
+    expect(mocks.count).toHaveBeenCalledWith({
+      where: {
+        deleted: true,
+        OR: [
+          { name: { contains: "ada", mode: "insensitive" } },
+          { email: { contains: "ada", mode: "insensitive" } },
+        ],
+      },
+    });
   });
 
   it("requests only the current page of ten rows", async () => {
@@ -87,5 +121,18 @@ describe("getUsers", () => {
       total: 13,
       totalPages: 2,
     });
+  });
+});
+
+describe("parseUserView", () => {
+  it("defaults to active users", () => {
+    expect(parseUserView(undefined)).toBe("active");
+    expect(parseUserView("active")).toBe("active");
+    expect(parseUserView(["deleted"])).toBe("active");
+    expect(parseUserView("unknown")).toBe("active");
+  });
+
+  it("reads the deleted view", () => {
+    expect(parseUserView("deleted")).toBe("deleted");
   });
 });
