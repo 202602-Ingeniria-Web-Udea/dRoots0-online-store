@@ -8,15 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { UserRole, UserRow } from "@/lib/users/queries";
 
-export type UserRole = "ADMIN" | "USER";
-
-export type UserRow = {
-  id: string;
-  email: string;
-  role: UserRole;
-  createdAt: Date;
-};
+export type { UserRole, UserRow };
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",
@@ -41,9 +35,11 @@ function RoleBadge({ role }: { role: UserRole }) {
 export function UsersTable({
   users,
   currentUserId,
+  emptyMessage = "No users found.",
 }: {
   users: UserRow[];
   currentUserId: string;
+  emptyMessage?: string;
 }) {
   return (
     <div className='overflow-x-auto rounded-lg border'>
@@ -52,6 +48,7 @@ export function UsersTable({
         <TableHeader>
           <TableRow>
             <TableHead>User ID</TableHead>
+            <TableHead>Name</TableHead>
             <TableHead>Created</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Role</TableHead>
@@ -61,14 +58,15 @@ export function UsersTable({
         <TableBody>
           {users.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className='h-24 text-center text-muted-foreground'>
-                No users found.
+              <TableCell colSpan={6} className='h-24 text-center text-muted-foreground'>
+                {emptyMessage}
               </TableCell>
             </TableRow>
           ) : (
             users.map((user) => (
               <TableRow key={user.id}>
                 <TableCell className='font-mono text-xs'>{user.id}</TableCell>
+                <TableCell className='font-medium'>{user.name}</TableCell>
                 <TableCell>{dateFormatter.format(user.createdAt)}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>

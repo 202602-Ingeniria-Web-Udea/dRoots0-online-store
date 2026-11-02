@@ -10,11 +10,17 @@ import {
 import { formatDateTime, formatQuantity } from "@/lib/inventory/format";
 import type { MasterRow } from "@/lib/inventory/queries";
 
-export function MastersTable({ masters }: { masters: MasterRow[] }) {
+export function MastersTable({
+  masters,
+  emptyMessage = "No inventory masters yet.",
+}: {
+  masters: MasterRow[];
+  emptyMessage?: string;
+}) {
   if (masters.length === 0) {
     return (
       <div className='rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground'>
-        No inventory masters yet.
+        {emptyMessage}
       </div>
     );
   }

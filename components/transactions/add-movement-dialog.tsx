@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { createMovement } from "@/lib/actions/movements";
+import type { MovementType } from "@/lib/inventory/movement-queries";
 import {
   createMovementSchema,
   type CreateMovementInput,
@@ -42,14 +43,20 @@ const TYPE_ITEMS = [
 export function AddMovementDialog({
   masterId,
   masterName,
+  movementType,
 }: {
   masterId: string;
   masterName: string;
+  movementType?: MovementType;
 }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const defaults: CreateMovementInput = { masterId, type: "INCOMING", quantity: "" };
+  const defaults: CreateMovementInput = {
+    masterId,
+    type: movementType ?? "INCOMING",
+    quantity: "",
+  };
   const form = useForm<CreateMovementInput>({
     resolver: zodResolver(createMovementSchema),
     defaultValues: defaults,
@@ -71,10 +78,12 @@ export function AddMovementDialog({
     form.reset(defaults);
     setOpen(false);
     // Force a fresh server render so the balance, table, and chart update.
-    router.replace(
-      `/transactions?master=${encodeURIComponent(masterId)}&_r=${encodeURIComponent(result.data?.id ?? "refresh")}`,
-      { scroll: false }
-    );
+    const params = new URLSearchParams({
+      master: masterId,
+      _r: result.data?.id ?? "refresh",
+    });
+    if (movementType) params.set("type", movementType);
+    router.replace(`/transactions?${params.toString()}`, { scroll: false });
   }
 
   return (

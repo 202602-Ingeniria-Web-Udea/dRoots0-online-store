@@ -11,14 +11,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { MovementType } from "@/lib/inventory/movement-queries";
 import type { MasterOption } from "@/lib/inventory/queries";
 
 export function MasterSelect({
   masters,
   selectedId,
+  selectedType,
 }: {
   masters: MasterOption[];
   selectedId?: string;
+  selectedType?: MovementType;
 }) {
   const router = useRouter();
   const items = masters.map((master) => ({ label: master.name, value: master.id }));
@@ -30,9 +33,14 @@ export function MasterSelect({
         items={items}
         value={selectedId ?? null}
         onValueChange={(value) => {
-          router.push(
-            value ? `/transactions?master=${encodeURIComponent(value)}` : "/transactions",
-          );
+          if (!value) {
+            router.push("/transactions");
+            return;
+          }
+
+          const params = new URLSearchParams({ master: value });
+          if (selectedType) params.set("type", selectedType);
+          router.push(`/transactions?${params.toString()}`);
         }}
       >
         <SelectTrigger id="master-select" className="w-full">

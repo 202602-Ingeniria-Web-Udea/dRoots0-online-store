@@ -1,24 +1,19 @@
-import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth/session";
 import { AddUserDialog } from "@/components/users/add-user-dialog";
-import { UsersTable, type UserRow } from "@/components/users/table";
+import { UsersTable } from "@/components/users/table";
+import { SearchForm } from "@/components/search-form";
+import { requireAdmin } from "@/lib/auth/session";
+import { readSearchTerm } from "@/lib/search-params";
+import { getUsers } from "@/lib/users/queries";
 
-async function getUsers(): Promise<UserRow[]> {
-  return prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      role: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-}
-
-export default async function UsersPage() {
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[] }>;
+}) {
   const actor = await requireAdmin();
-
-  const users = await getUsers();
+  const params = await searchParams;
+  const search = readSearchTerm(params.q);
+  const users = await getUsers(search);
 
   return (
     <div className='flex flex-col gap-6'>
@@ -31,7 +26,17 @@ export default async function UsersPage() {
         </div>
         <AddUserDialog />
       </div>
-      <UsersTable users={users} currentUserId={actor.id} />
+      <SearchForm
+        action='/users'
+        label='Search users'
+        placeholder='Search by name or email…'
+        defaultValue={search}
+      />
+      <UsersTable
+        users={users}
+        currentUserId={actor.id}
+        emptyMessage={search ? `No users match “${search}”.` : undefined}
+      />
     </div>
   );
 }
