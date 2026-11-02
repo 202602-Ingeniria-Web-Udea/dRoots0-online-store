@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Administrator avatar">
+  <defs>
+    <linearGradient id="admin-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#115e59" />
+      <stop offset="100%" stop-color="#0f766e" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="64" fill="url(#admin-bg)" />
+  <circle cx="64" cy="49" r="23" fill="#ccfbf1" />
+  <path d="M18 124c3-28 21-43 46-43s43 15 46 43" fill="#ccfbf1" />
+  <path d="M46 30l18-12 18 12-6 7H52z" fill="#99f6e4" />
+</svg>
