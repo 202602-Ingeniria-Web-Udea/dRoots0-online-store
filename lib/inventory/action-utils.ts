@@ -18,3 +18,7 @@ function errorCode(error: unknown): string | undefined {
 
 /** Prisma P2002: unique constraint violation (e.g. duplicated master name). */
 export const isUniqueViolation = (error: unknown) => errorCode(error) === "P2002";
+
+/** Prisma P2034: write conflict / serialization failure, safe to retry. */
+export const isSerializationFailure = (error: unknown) =>
+  errorCode(error) === "P2034";
