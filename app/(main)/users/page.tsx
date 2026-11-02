@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth/session";
+import { AddUserDialog } from "@/components/users/add-user-dialog";
 import { UsersTable, type UserRow } from "@/components/users/table";
 
 async function getUsers(): Promise<UserRow[]> {
@@ -21,11 +22,14 @@ export default async function UsersPage() {
 
   return (
     <div className='flex flex-col gap-6'>
-      <div className='flex flex-col gap-1'>
-        <h1 className='text-2xl font-semibold tracking-tight'>Users</h1>
-        <p className='text-sm text-muted-foreground'>
-          Manage the roles of the people who can access the dashboard.
-        </p>
+      <div className='flex flex-wrap items-start justify-between gap-4'>
+        <div className='flex flex-col gap-1'>
+          <h1 className='text-2xl font-semibold tracking-tight'>Users</h1>
+          <p className='text-sm text-muted-foreground'>
+            Manage the roles of the people who can access the dashboard.
+          </p>
+        </div>
+        <AddUserDialog />
       </div>
       <UsersTable users={users} currentUserId={actor.id} />
     </div>
