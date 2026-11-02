@@ -1,3 +1,4 @@
+import { SortableDateHeader } from "@/components/sortable-date-header";
 import {
   Table,
   TableBody,
@@ -9,13 +10,18 @@ import {
 } from "@/components/ui/table";
 import { formatDateTime, formatQuantity } from "@/lib/inventory/format";
 import type { MasterRow } from "@/lib/inventory/queries";
+import type { SortOrder } from "@/lib/sorting";
 
 export function MastersTable({
   masters,
   emptyMessage = "No inventory masters yet.",
+  order,
+  dateSortHref,
 }: {
   masters: MasterRow[];
   emptyMessage?: string;
+  order: SortOrder;
+  dateSortHref: string;
 }) {
   if (masters.length === 0) {
     return (
@@ -37,7 +43,12 @@ export function MastersTable({
             <TableHead>Name</TableHead>
             <TableHead className='text-right'>Current balance</TableHead>
             <TableHead>Creator</TableHead>
-            <TableHead className='pr-4'>Created</TableHead>
+            <SortableDateHeader
+              label='Created'
+              order={order}
+              href={dateSortHref}
+              className='pr-4'
+            />
           </TableRow>
         </TableHeader>
         <TableBody>

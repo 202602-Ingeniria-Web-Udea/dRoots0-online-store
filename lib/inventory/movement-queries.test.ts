@@ -28,6 +28,46 @@ describe("getMasterDetail", () => {
     );
   });
 
+  it("orders movements newest first by default", async () => {
+    mocks.findUnique.mockResolvedValue(null);
+
+    await getMasterDetail("master-1");
+
+    expect(mocks.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({
+          movements: expect.objectContaining({
+            orderBy: [
+              { occurredAt: "desc" },
+              { createdAt: "desc" },
+              { id: "desc" },
+            ],
+          }),
+        }),
+      }),
+    );
+  });
+
+  it("orders movements oldest first when requested", async () => {
+    mocks.findUnique.mockResolvedValue(null);
+
+    await getMasterDetail("master-1", undefined, 1, "oldest");
+
+    expect(mocks.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: expect.objectContaining({
+          movements: expect.objectContaining({
+            orderBy: [
+              { occurredAt: "asc" },
+              { createdAt: "asc" },
+              { id: "asc" },
+            ],
+          }),
+        }),
+      }),
+    );
+  });
+
   it("maps movements, responsible names, and current balance", async () => {
     const occurredAt = new Date("2026-10-30T10:00:00Z");
     mocks.findUnique.mockResolvedValue({

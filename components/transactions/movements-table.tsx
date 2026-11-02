@@ -1,3 +1,4 @@
+import { SortableDateHeader } from "@/components/sortable-date-header";
 import {
   Table,
   TableBody,
@@ -12,15 +13,20 @@ import type {
   MovementRow,
   MovementType,
 } from "@/lib/inventory/movement-queries";
+import type { SortOrder } from "@/lib/sorting";
 
 const BADGE_BASE = "inline-flex rounded-full px-2 py-0.5 text-xs font-medium";
 
 export function MovementsTable({
   movements,
   filterType,
+  order,
+  dateSortHref,
 }: {
   movements: MovementRow[];
   filterType?: MovementType;
+  order: SortOrder;
+  dateSortHref: string;
 }) {
   if (movements.length === 0) {
     const message = filterType
@@ -43,7 +49,11 @@ export function MovementsTable({
         <TableHeader>
           <TableRow>
             <TableHead className='pl-4'>ID</TableHead>
-            <TableHead>Date</TableHead>
+            <SortableDateHeader
+              label='Date'
+              order={order}
+              href={dateSortHref}
+            />
             <TableHead>Type</TableHead>
             <TableHead className='text-right'>Quantity</TableHead>
             <TableHead className='pr-4'>Responsible</TableHead>

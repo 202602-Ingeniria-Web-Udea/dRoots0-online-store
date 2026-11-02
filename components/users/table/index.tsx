@@ -1,3 +1,4 @@
+import { SortableDateHeader } from "@/components/sortable-date-header";
 import { DeleteUserDialog } from "@/components/users/delete-user-dialog";
 import { EditUserDialog } from "@/components/users/edit-dialog";
 import { RestoreUserButton } from "@/components/users/restore-user-button";
@@ -10,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { SortOrder } from "@/lib/sorting";
 import type { UserRole, UserRow } from "@/lib/users/queries";
 
 export type { UserRole, UserRow };
@@ -38,10 +40,14 @@ export function UsersTable({
   users,
   currentUserId,
   emptyMessage = "No users found.",
+  order,
+  dateSortHref,
 }: {
   users: UserRow[];
   currentUserId: string;
   emptyMessage?: string;
+  order: SortOrder;
+  dateSortHref: string;
 }) {
   return (
     <div className='overflow-x-auto rounded-lg border'>
@@ -51,7 +57,11 @@ export function UsersTable({
           <TableRow>
             <TableHead>User ID</TableHead>
             <TableHead>Name</TableHead>
-            <TableHead>Created</TableHead>
+            <SortableDateHeader
+              label='Created'
+              order={order}
+              href={dateSortHref}
+            />
             <TableHead>Email</TableHead>
             <TableHead>Role</TableHead>
             <TableHead className='text-right'>Actions</TableHead>

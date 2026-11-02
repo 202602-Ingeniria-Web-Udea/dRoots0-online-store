@@ -16,6 +16,11 @@ import {
 } from "@/lib/inventory/movement-queries";
 import { getMasterOptions } from "@/lib/inventory/queries";
 import { readPage } from "@/lib/pagination";
+import {
+  readSortOrder,
+  toggleSortOrder,
+  type SortOrder,
+} from "@/lib/sorting";
 
 export const metadata: Metadata = { title: "Transactions" };
 
@@ -25,10 +30,16 @@ const FILTERS: { label: string; value?: MovementType }[] = [
   { label: "Outgoing", value: "OUTGOING" },
 ];
 
-function filterHref(masterId: string, type?: MovementType, page = 1) {
+function filterHref(
+  masterId: string,
+  type?: MovementType,
+  page = 1,
+  order: SortOrder = "newest",
+) {
   const params = new URLSearchParams({ master: masterId });
   if (type) params.set("type", type);
   if (page > 1) params.set("page", String(page));
+  if (order === "oldest") params.set("order", "oldest");
   return `/transactions?${params.toString()}`;
 }
 
@@ -39,6 +50,7 @@ export default async function TransactionsPage({
     master?: string | string[];
     type?: string | string[];
     page?: string | string[];
+    order?: string | string[];
   }>;
 }) {
   await requireUser();
@@ -47,10 +59,16 @@ export default async function TransactionsPage({
   const requestedId = typeof params.master === "string" ? params.master : undefined;
   const requestedType = parseMovementType(params.type);
   const requestedPage = readPage(params.page);
+  const order = readSortOrder(params.order);
 
   const masters = await getMasterOptions();
   const detail = requestedId
-    ? await getMasterDetail(requestedId, requestedType, requestedPage)
+    ? await getMasterDetail(
+        requestedId,
+        requestedType,
+        requestedPage,
+        order,
+      )
     : null;
 
   return (
@@ -61,6 +79,7 @@ export default async function TransactionsPage({
         masters={masters}
         selectedId={detail?.id}
         selectedType={requestedType}
+        selectedOrder={order}
       />
 
       {!detail ? (
@@ -85,6 +104,7 @@ export default async function TransactionsPage({
               masterId={detail.id}
               masterName={detail.name}
               movementType={requestedType}
+              movementOrder={order}
             />
           </div>
           <BalanceChart masterName={detail.name} data={detail.daily} />
@@ -101,7 +121,7 @@ export default async function TransactionsPage({
                 return (
                   <Link
                     key={filter.label}
-                    href={filterHref(detail.id, filter.value)}
+                    href={filterHref(detail.id, filter.value, 1, order)}
                     aria-current={active ? "true" : undefined}
                     className={buttonVariants({
                       variant: active ? "default" : "outline",
@@ -117,12 +137,19 @@ export default async function TransactionsPage({
           <MovementsTable
             movements={detail.movements}
             filterType={requestedType}
+            order={order}
+            dateSortHref={filterHref(
+              detail.id,
+              requestedType,
+              1,
+              toggleSortOrder(order),
+            )}
           />
           <PaginationControls
             pagination={detail.movementPagination}
             itemLabel='movements'
             hrefForPage={(target) =>
-              filterHref(detail.id, requestedType, target)
+              filterHref(detail.id, requestedType, target, order)
             }
           />
         </section>

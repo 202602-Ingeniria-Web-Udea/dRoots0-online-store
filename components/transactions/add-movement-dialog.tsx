@@ -34,6 +34,7 @@ import {
   createMovementSchema,
   type CreateMovementInput,
 } from "@/lib/inventory/schemas";
+import type { SortOrder } from "@/lib/sorting";
 
 const TYPE_ITEMS = [
   { label: "Incoming", value: "INCOMING" },
@@ -44,10 +45,12 @@ export function AddMovementDialog({
   masterId,
   masterName,
   movementType,
+  movementOrder,
 }: {
   masterId: string;
   masterName: string;
   movementType?: MovementType;
+  movementOrder?: SortOrder;
 }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -83,6 +86,7 @@ export function AddMovementDialog({
       _r: result.data?.id ?? "refresh",
     });
     if (movementType) params.set("type", movementType);
+    if (movementOrder === "oldest") params.set("order", "oldest");
     router.replace(`/transactions?${params.toString()}`, { scroll: false });
   }
 

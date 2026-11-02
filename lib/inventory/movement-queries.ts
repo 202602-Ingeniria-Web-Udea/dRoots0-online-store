@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { buildPagination, type Pagination } from "@/lib/pagination";
+import { sortDirection, type SortOrder } from "@/lib/sorting";
 
 import {
   buildDailyBalances,
@@ -44,7 +45,10 @@ export async function getMasterDetail(
   masterId: string,
   movementType?: MovementType,
   requestedPage = 1,
+  order: SortOrder = "newest",
 ): Promise<MasterDetail | null> {
+  const direction = sortDirection(order);
+
   const master = await prisma.inventoryMaster.findUnique({
     where: { id: masterId },
     select: {
@@ -52,7 +56,11 @@ export async function getMasterDetail(
       name: true,
       initialBalance: true,
       movements: {
-        orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }],
+        orderBy: [
+          { occurredAt: direction },
+          { createdAt: direction },
+          { id: direction },
+        ],
         select: {
           id: true,
           occurredAt: true,
