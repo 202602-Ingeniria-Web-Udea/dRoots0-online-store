@@ -6,13 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
+import { AsciiAvatarFallback } from "@/components/profile/ascii-avatar-fallback";
 import { updateProfileImage } from "@/lib/actions/profile";
-import { initialsFor } from "@/lib/profile/initials";
+import { customAvatarImage } from "@/lib/profile/animal-avatar";
 import {
   profileImageSchema,
   type ProfileImageInput,
 } from "@/lib/profile/schema";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -47,7 +48,7 @@ export function ProfileForm({
   });
   const { isSubmitting } = form.formState;
   const image = useWatch({ control: form.control, name: "image" }) ?? "";
-  const initials = initialsFor(user.name, user.email);
+  const previewImage = customAvatarImage(image);
 
   async function onSubmit(values: ProfileImageInput) {
     setServerError(null);
@@ -83,8 +84,8 @@ export function ProfileForm({
         <form onSubmit={form.handleSubmit(onSubmit)} className='flex flex-col gap-6'>
           <div className='flex items-center gap-4'>
             <Avatar className='size-16'>
-              <AvatarImage src={image || undefined} alt={user.name} />
-              <AvatarFallback>{initials}</AvatarFallback>
+              <AvatarImage src={previewImage} alt={user.name} />
+              <AsciiAvatarFallback seed={user.email} size='lg' />
             </Avatar>
             <div className='text-sm'>
               <p className='font-medium'>{user.name}</p>
@@ -107,7 +108,8 @@ export function ProfileForm({
                     aria-invalid={fieldState.invalid}
                   />
                   <FieldDescription>
-                    Use an https image URL or a local /avatars/... path.
+                    Use an https image URL or a local /avatars/... path. The
+                    default path keeps your generated animal avatar.
                   </FieldDescription>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>

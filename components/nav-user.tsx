@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 
-import { initialsFor } from "@/lib/profile/initials";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AsciiAvatarFallback } from "@/components/profile/ascii-avatar-fallback";
+import { customAvatarImage } from "@/lib/profile/animal-avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +33,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  const initials = initialsFor(user.name, user.email);
+  const image = customAvatarImage(user.image);
 
   return (
     <SidebarMenu>
@@ -41,9 +42,9 @@ export function NavUser({
           <DropdownMenuTrigger
             render={<SidebarMenuButton size='lg' className='aria-expanded:bg-muted' />}
           >
-            <Avatar>
-              <AvatarImage src={user.image ?? undefined} alt={user.name} />
-              <AvatarFallback>{initials}</AvatarFallback>
+            <Avatar size='lg'>
+              <AvatarImage src={image} alt={user.name} />
+              <AsciiAvatarFallback seed={user.email} />
             </Avatar>
             <div className='grid flex-1 text-left text-sm leading-tight'>
               <span className='truncate font-medium'>{user.name}</span>
@@ -60,9 +61,9 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuLabel className='p-0 font-normal'>
                 <div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
-                  <Avatar>
-                    <AvatarImage src={user.image ?? undefined} alt={user.name} />
-                    <AvatarFallback>{initials}</AvatarFallback>
+                  <Avatar size='lg'>
+                    <AvatarImage src={image} alt={user.name} />
+                    <AsciiAvatarFallback seed={user.email} />
                   </Avatar>
                   <div className='grid flex-1 text-left text-sm leading-tight'>
                     <span className='truncate font-medium'>{user.name}</span>

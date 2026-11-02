@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   findUnique: vi.fn(),
   update: vi.fn(),
+  updateMany: vi.fn(),
   create: vi.fn(),
   revalidatePath: vi.fn(),
 }));
@@ -17,6 +18,7 @@ vi.mock("@/lib/prisma", () => ({
     user: {
       findUnique: mocks.findUnique,
       update: mocks.update,
+      updateMany: mocks.updateMany,
       create: mocks.create,
     },
   },
@@ -26,7 +28,12 @@ vi.mock("next/cache", () => ({
   revalidatePath: mocks.revalidatePath,
 }));
 
-import { createUser, updateUserRole } from "./users";
+import {
+  createUser,
+  deleteUser,
+  restoreUser,
+  updateUserRole,
+} from "./users";
 
 describe("updateUserRole", () => {
   beforeEach(() => {
@@ -171,6 +178,141 @@ describe("createUser", () => {
     expect(result).toEqual({
       ok: false,
       error: "Could not create the user. Please try again.",
+    });
+    expect(errorSpy).toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+});
+
+describe("deleteUser", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ id: "admin-1" });
+  });
+
+  it("rejects non-admin callers without touching the database", async () => {
+    mocks.requireAdmin.mockRejectedValue(new Error("NEXT_REDIRECT"));
+
+    await expect(deleteUser({ userId: "user-2" })).rejects.toThrow();
+
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid input", async () => {
+    const result = await deleteUser({ userId: "" });
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Invalid user deletion request.",
+    });
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects deleting your own account", async () => {
+    const result = await deleteUser({ userId: "admin-1" });
+
+    expect(result).toEqual({
+      ok: false,
+      error: "You cannot delete your own account.",
+    });
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects a missing or already-deleted user", async () => {
+    mocks.updateMany.mockResolvedValue({ count: 0 });
+
+    const result = await deleteUser({ userId: "user-2" });
+
+    expect(result).toEqual({ ok: false, error: "User not found." });
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("soft-deletes the user and revalidates the users page", async () => {
+    mocks.updateMany.mockResolvedValue({ count: 1 });
+
+    const result = await deleteUser({ userId: "user-2" });
+
+    expect(result).toEqual({ ok: true });
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { id: "user-2", deleted: false },
+      data: { deleted: true, enabled: false },
+    });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/users");
+  });
+
+  it("returns a safe error for unexpected database failures", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.updateMany.mockRejectedValue(new Error("database unavailable"));
+
+    const result = await deleteUser({ userId: "user-2" });
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Could not delete the user. Please try again.",
+    });
+    expect(errorSpy).toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+});
+
+describe("restoreUser", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ id: "admin-1" });
+  });
+
+  it("rejects non-admin callers without touching the database", async () => {
+    mocks.requireAdmin.mockRejectedValue(new Error("NEXT_REDIRECT"));
+
+    await expect(restoreUser({ userId: "user-2" })).rejects.toThrow();
+
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid input", async () => {
+    const result = await restoreUser({ userId: "" });
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Invalid user restore request.",
+    });
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects a missing deleted user", async () => {
+    mocks.updateMany.mockResolvedValue({ count: 0 });
+
+    const result = await restoreUser({ userId: "user-2" });
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Deleted user not found.",
+    });
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("restores the user and revalidates the users page", async () => {
+    mocks.updateMany.mockResolvedValue({ count: 1 });
+
+    const result = await restoreUser({ userId: "user-2" });
+
+    expect(result).toEqual({ ok: true });
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { id: "user-2", deleted: true },
+      data: { deleted: false, enabled: true },
+    });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/users");
+  });
+
+  it("returns a safe error for unexpected database failures", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.updateMany.mockRejectedValue(new Error("database unavailable"));
+
+    const result = await restoreUser({ userId: "user-2" });
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Could not restore the user. Please try again.",
     });
     expect(errorSpy).toHaveBeenCalled();
     errorSpy.mockRestore();

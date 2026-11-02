@@ -29,11 +29,11 @@ The dashboard tracks each inventory master from its initial balance through an a
 - Incoming and outgoing movements attributed to the responsible user.
 - Current balances derived from the initial balance and movement history.
 - Daily balance chart for the selected master.
-- ADMIN-only master creation, user creation, and role management.
+- ADMIN-only master creation, user creation, soft deletion, restoration, and role management.
 - Dashboard summary cards with recent activity.
 - Search for masters and users, and filter movements by type.
 - Pagination for masters, users, and movement history, with 10 rows per page.
-- Profile image with initials fallback.
+- Custom profile images with deterministic ASCII animal avatar fallbacks.
 - Server-side validation and authorization.
 - Responsive dashboard shell with loading, empty, error, and success states.
 
@@ -259,8 +259,6 @@ Vercel build command: `pnpm exec prisma generate && pnpm run build`. Database mi
 
 ## Limitations
 
-- Masters and movement lists are not paginated; the design targets the course dataset size.
-- User accounts are provisioned with the seed script; an admin create-user UI is not included.
 - The existing store models are present in the schema but unused by the current UI.
 - Automated browser end-to-end tests are not included; browser flows are verified manually.
 - Seed accounts are test credentials and are not intended for public production data.

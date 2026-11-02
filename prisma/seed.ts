@@ -38,14 +38,18 @@ async function upsertAccount(account: SeedAccount) {
     name: account.name,
     password: passwordHash,
     role: account.role,
-    enabled: true,
-    deleted: false,
   };
 
   const user = await prisma.user.upsert({
     where: { email: account.email },
+    // Preserve deleted/enabled state and any custom profile image on reruns.
     update: data,
-    create: { email: account.email, ...data },
+    create: {
+      email: account.email,
+      ...data,
+      enabled: true,
+      deleted: false,
+    },
   });
 
   const image =
@@ -53,7 +57,7 @@ async function upsertAccount(account: SeedAccount) {
 
   await prisma.profile.upsert({
     where: { userId: user.id },
-    update: { image },
+    update: {},
     create: {
       userId: user.id,
       image,

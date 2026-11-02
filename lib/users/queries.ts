@@ -2,32 +2,46 @@ import { prisma } from "@/lib/prisma";
 import { buildPagination, type Paginated } from "@/lib/pagination";
 
 export type UserRole = "ADMIN" | "USER";
+export type UserView = "active" | "deleted";
 
 export type UserRow = {
   id: string;
   name: string;
   email: string;
   role: UserRole;
+  deleted: boolean;
   createdAt: Date;
 };
+
+/** Reads the active/deleted users view from a query parameter. */
+export function parseUserView(
+  value: string | string[] | undefined,
+): UserView {
+  return value === "deleted" ? "deleted" : "active";
+}
 
 /** Lists users, optionally filtering by name or email. */
 export async function getUsers({
   search,
   page = 1,
+  view = "active",
 }: {
   search?: string;
   page?: number;
+  view?: UserView;
 } = {}): Promise<Paginated<UserRow>> {
   const term = search?.trim();
-  const where = term
-    ? {
-        OR: [
-          { name: { contains: term, mode: "insensitive" as const } },
-          { email: { contains: term, mode: "insensitive" as const } },
-        ],
-      }
-    : undefined;
+  const where = {
+    deleted: view === "deleted",
+    ...(term
+      ? {
+          OR: [
+            { name: { contains: term, mode: "insensitive" as const } },
+            { email: { contains: term, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
 
   const total = await prisma.user.count({ where });
   const pagination = buildPagination(total, page);
@@ -39,6 +53,7 @@ export async function getUsers({
       name: true,
       email: true,
       role: true,
+      deleted: true,
       createdAt: true,
     },
     orderBy: { createdAt: "desc" },

@@ -1,4 +1,6 @@
+import { DeleteUserDialog } from "@/components/users/delete-user-dialog";
 import { EditUserDialog } from "@/components/users/edit-dialog";
+import { RestoreUserButton } from "@/components/users/restore-user-button";
 import {
   Table,
   TableBody,
@@ -74,11 +76,22 @@ export function UsersTable({
                 </TableCell>
                 <TableCell className='text-right'>
                   {user.id === currentUserId ? (
-                    <span className='text-xs text-muted-foreground'>Current account</span>
-                  ) : (
-                    <EditUserDialog
-                      user={{ id: user.id, email: user.email, role: user.role }}
+                    <span className='text-xs text-muted-foreground'>
+                      Current account
+                    </span>
+                  ) : user.deleted ? (
+                    <RestoreUserButton
+                      user={{ id: user.id, email: user.email }}
                     />
+                  ) : (
+                    <div className='flex flex-wrap items-center justify-end gap-2'>
+                      <EditUserDialog
+                        user={{ id: user.id, email: user.email, role: user.role }}
+                      />
+                      <DeleteUserDialog
+                        user={{ id: user.id, email: user.email }}
+                      />
+                    </div>
                   )}
                 </TableCell>
               </TableRow>
