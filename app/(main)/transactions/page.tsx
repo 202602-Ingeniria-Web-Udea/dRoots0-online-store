@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { PaginationControls } from "@/components/pagination-controls";
 import { AddMovementDialog } from "@/components/transactions/add-movement-dialog";
 import { BalanceChart } from "@/components/transactions/balance-chart";
 import { MasterSelect } from "@/components/transactions/master-select";
@@ -14,6 +15,7 @@ import {
   parseMovementType,
 } from "@/lib/inventory/movement-queries";
 import { getMasterOptions } from "@/lib/inventory/queries";
+import { readPage } from "@/lib/pagination";
 
 export const metadata: Metadata = { title: "Transactions" };
 
@@ -23,9 +25,10 @@ const FILTERS: { label: string; value?: MovementType }[] = [
   { label: "Outgoing", value: "OUTGOING" },
 ];
 
-function filterHref(masterId: string, type?: MovementType) {
+function filterHref(masterId: string, type?: MovementType, page = 1) {
   const params = new URLSearchParams({ master: masterId });
   if (type) params.set("type", type);
+  if (page > 1) params.set("page", String(page));
   return `/transactions?${params.toString()}`;
 }
 
@@ -35,6 +38,7 @@ export default async function TransactionsPage({
   searchParams: Promise<{
     master?: string | string[];
     type?: string | string[];
+    page?: string | string[];
   }>;
 }) {
   await requireUser();
@@ -42,10 +46,11 @@ export default async function TransactionsPage({
   const params = await searchParams;
   const requestedId = typeof params.master === "string" ? params.master : undefined;
   const requestedType = parseMovementType(params.type);
+  const requestedPage = readPage(params.page);
 
   const masters = await getMasterOptions();
   const detail = requestedId
-    ? await getMasterDetail(requestedId, requestedType)
+    ? await getMasterDetail(requestedId, requestedType, requestedPage)
     : null;
 
   return (
@@ -112,6 +117,13 @@ export default async function TransactionsPage({
           <MovementsTable
             movements={detail.movements}
             filterType={requestedType}
+          />
+          <PaginationControls
+            pagination={detail.movementPagination}
+            itemLabel='movements'
+            hrefForPage={(target) =>
+              filterHref(detail.id, requestedType, target)
+            }
           />
         </section>
       )}

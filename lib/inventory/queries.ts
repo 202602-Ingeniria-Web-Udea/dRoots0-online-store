@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { buildPagination, type Paginated } from "@/lib/pagination";
 
 import { computeCurrentBalance } from "./balance";
 import { formatPersonName } from "./format";
@@ -17,16 +18,26 @@ export interface MasterOption {
 }
 
 /** Only non-sensitive user fields (name, lastName) are ever selected. */
-export async function getMastersWithBalances(
-  search?: string,
-): Promise<MasterRow[]> {
+export async function getMastersWithBalances({
+  search,
+  page = 1,
+}: {
+  search?: string;
+  page?: number;
+} = {}): Promise<Paginated<MasterRow>> {
   const term = search?.trim();
+  const where = term
+    ? { name: { contains: term, mode: "insensitive" as const } }
+    : undefined;
+
+  const total = await prisma.inventoryMaster.count({ where });
+  const pagination = buildPagination(total, page);
 
   const masters = await prisma.inventoryMaster.findMany({
-    where: term
-      ? { name: { contains: term, mode: "insensitive" } }
-      : undefined,
+    where,
     orderBy: { createdAt: "desc" },
+    skip: (pagination.page - 1) * pagination.pageSize,
+    take: pagination.pageSize,
     select: {
       id: true,
       name: true,
@@ -37,16 +48,19 @@ export async function getMastersWithBalances(
     },
   });
 
-  return masters.map((master) => ({
-    id: master.id,
-    name: master.name,
-    currentBalance: computeCurrentBalance(
-      master.initialBalance,
-      master.movements,
-    ).toFixed(),
-    creator: formatPersonName(master.createdBy),
-    createdAt: master.createdAt,
-  }));
+  return {
+    items: masters.map((master) => ({
+      id: master.id,
+      name: master.name,
+      currentBalance: computeCurrentBalance(
+        master.initialBalance,
+        master.movements,
+      ).toFixed(),
+      creator: formatPersonName(master.createdBy),
+      createdAt: master.createdAt,
+    })),
+    pagination,
+  };
 }
 
 export async function getMasterOptions(): Promise<MasterOption[]> {
