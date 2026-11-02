@@ -54,7 +54,7 @@ describe("getMasterDetail", () => {
 
     const result = await getMasterDetail("master-1");
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       id: "master-1",
       name: "Widget",
       currentBalance: "13",
@@ -75,5 +75,7 @@ describe("getMasterDetail", () => {
         },
       ],
     });
+        // The series starts on the day of the first movement (America/Bogota).
+    expect(result?.daily[0]).toEqual({ date: "2026-10-30", balance: "13" });
   });
 });
