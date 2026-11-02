@@ -151,6 +151,24 @@ The seed is idempotent and updates the password, role, enabled state, and delete
 
 The accounts are development and evaluation credentials. They are not intended for a public production deployment with real data. Different credentials are configured through the `SEED_*` variables.
 
+## Demo data
+
+The shared database can be populated with fictional online-store history:
+
+```bash
+pnpm run seed:demo
+```
+
+The script:
+
+- Removes only `B-test-*` inventory masters and their movements.
+- Upserts six `Demo -` inventory masters with realistic movements across the last 60 days.
+- Upserts fictional categories, suppliers, products, customers, orders, order items, and payments.
+- Is idempotent; rerunning it does not duplicate records.
+- Does not delete users or change passwords.
+
+The store models are seeded for completeness but are not displayed by the current UI. The inventory masters, movements, balances, and chart are visible in the application.
+
 ## Data model and inventory rules
 
 | Model               | Purpose                                                                                                                            |
