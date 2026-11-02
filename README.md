@@ -1,9 +1,8 @@
 # dRoots0 Inventory
 
-- **Team:** 
-Diego Ferney Pulgarín Jiménez · Bryan Giraldo Quintero
+- **Team:** Diego Ferney Pulgarín Jiménez · Bryan Giraldo Quintero
 - **Repository:** https://github.com/202602-Ingeniria-Web-Udea/dRoots0-online-store
-- **Deployment:** [Vercel deployment URL]
+- **Deployment:** https://droots0-online-store.vercel.app
 - **Course:** Web Engineering
 
 ## Test accounts
@@ -138,14 +137,11 @@ Authentication uses the Auth.js Credentials provider. Passwords are stored as bc
 
 Sidebar visibility is a usability feature. Authorization is enforced independently in pages and Server Actions.
 
-## Test accounts
+## Account provisioning
 
-| Role  | Email               | Password     |
-|-------|---------------------|--------------|
-| ADMIN | `admin@example.com` | `Admin1234!` |
-| USER  | `user@example.com`  | `User1234!`  |
+The evaluation accounts are listed at the top of this document.
 
-Provision or reset the accounts with:
+Provision or reset them with:
 
 ```bash
 pnpm run seed
