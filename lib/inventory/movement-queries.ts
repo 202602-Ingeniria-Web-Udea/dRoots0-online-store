@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { buildPagination, type Pagination } from "@/lib/pagination";
 
 import {
   buildDailyBalances,
@@ -30,6 +31,7 @@ export interface MasterDetail {
   name: string;
   currentBalance: string;
   movements: MovementRow[];
+  movementPagination: Pagination;
   daily: DailyBalance[];
 }
 
@@ -41,6 +43,7 @@ export interface MasterDetail {
 export async function getMasterDetail(
   masterId: string,
   movementType?: MovementType,
+  requestedPage = 1,
 ): Promise<MasterDetail | null> {
   const master = await prisma.inventoryMaster.findUnique({
     where: { id: masterId },
@@ -62,7 +65,7 @@ export async function getMasterDetail(
   });
   if (!master) return null;
 
-  const movements: MovementRow[] = master.movements
+  const filteredMovements: MovementRow[] = master.movements
     .filter((movement) => !movementType || movement.type === movementType)
     .map((movement) => ({
       id: movement.id,
@@ -72,6 +75,16 @@ export async function getMasterDetail(
       responsible: formatPersonName(movement.responsible),
     }));
 
+  const movementPagination = buildPagination(
+    filteredMovements.length,
+    requestedPage,
+  );
+  const start = (movementPagination.page - 1) * movementPagination.pageSize;
+  const movements = filteredMovements.slice(
+    start,
+    start + movementPagination.pageSize,
+  );
+
   return {
     id: master.id,
     name: master.name,
@@ -80,6 +93,7 @@ export async function getMasterDetail(
       master.movements,
     ).toFixed(),
     movements,
+    movementPagination,
     daily: buildDailyBalances(master.initialBalance, master.movements, {
       until: new Date(),
     }),
